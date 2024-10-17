@@ -1,42 +1,37 @@
 import React, { useState } from "react";
 import Buttons from "./Buttons";
 import Questions from "./Questions";
-import { data } from "../data/questions"; // Import questions data
+import { data } from "../data/questions";
 
 const QuizContainer = () => {
   const [currentQus, setCurrentQus] = useState(0);
   const [score, setScore] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [page, setPage] = useState(1); // Track page navigation
-  const [selectedAnswers, setSelectedAnswers] = useState({}); // Track multiple selections per question
+  const [page, setPage] = useState(1);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
 
-  // Handle checkbox selection for multiple answers
+  // Handle multiple selections
   const handleAnswer = (option) => {
     setSelectedAnswers((prevAnswers) => {
       const currentSelections = prevAnswers[currentQus] || [];
       const isSelected = currentSelections.includes(option);
 
-      // Toggle selection: add if not selected, remove if already selected
       const updatedSelections = isSelected
         ? currentSelections.filter((ans) => ans !== option)
         : [...currentSelections, option];
 
-      return {
-        ...prevAnswers,
-        [currentQus]: updatedSelections,
-      };
+      return { ...prevAnswers, [currentQus]: updatedSelections };
     });
   };
 
+  // Calculate the score on submission
   const handleSubmit = () => {
     let finalScore = 0;
 
-    // Calculate score by validating answers against correct ones
     data.forEach((question, index) => {
-      const correctAnswer = [question.ans]; // Convert single answer to array for comparison
+      const correctAnswer = [question.ans]; // Wrap answer in array for comparison
       const selected = selectedAnswers[index] || [];
 
-      // If selected answers match the correct one, increment score
       if (
         correctAnswer.length === selected.length &&
         correctAnswer.every((ans) => selected.includes(ans))
@@ -46,7 +41,15 @@ const QuizContainer = () => {
     });
 
     setScore(finalScore);
-    setIsSubmitted(true); // Display the final score
+    setIsSubmitted(true);
+  };
+
+  const handleRestart = () => {
+    setCurrentQus(0);
+    setScore(0);
+    setIsSubmitted(false);
+    setPage(1);
+    setSelectedAnswers({});
   };
 
   return (
@@ -67,7 +70,10 @@ const QuizContainer = () => {
           />
         </>
       ) : (
-        <h2>Your final score is: {score}</h2>
+        <div>
+          <h2>Your final score is: {score}</h2>
+          <button onClick={handleRestart}>Restart Quiz</button>{" "}
+        </div>
       )}
     </>
   );
