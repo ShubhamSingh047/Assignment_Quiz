@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Buttons from "./Buttons";
 import Questions from "./Questions";
 import { data } from "../data/questions";
+import Timer from "./Timer";
+import FinalReport from "./FinalReport";
 
 const QuizContainer = () => {
   const [currentQus, setCurrentQus] = useState(0);
@@ -9,6 +11,20 @@ const QuizContainer = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [time, setTime] = useState(30);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime((prev) => {
+        if (prev <= 1) {
+          clearInterval();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Handle multiple selections
   const handleAnswer = (option) => {
@@ -54,8 +70,9 @@ const QuizContainer = () => {
 
   return (
     <>
-      {!isSubmitted ? (
+      {!isSubmitted && time > 0 ? (
         <>
+          <Timer timerLeft={time} />
           <Questions
             currentQus={currentQus}
             handleAnswer={handleAnswer}
@@ -70,10 +87,12 @@ const QuizContainer = () => {
           />
         </>
       ) : (
-        <div>
-          <h2>Your final score is: {score}</h2>
-          <button onClick={handleRestart}>Restart Quiz</button>{" "}
-        </div>
+        <FinalReport
+          score={score}
+          handleRestart={handleRestart}
+          data={data}
+          selectedAnswers={selectedAnswers}
+        />
       )}
     </>
   );
